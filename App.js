@@ -5,24 +5,17 @@ import SelectDropdown from 'react-native-select-dropdown';
 
 export default function App() {
 
-
   const [checked, setChecked] = React.useState('DEC');
-  //checked facut in if intr-un useEffect cand se schimba checked si cand se apasa pe butonu de calcul
-
-  const [adresaIP, setAdresaIP] = React.useState('192.168.0.0')
-
+  const [adresaIP, setAdresaIP]                       = React.useState('192.168.0.0')
   const [culoareAdresaValida, setCuloareAdresaValida] = React.useState('yellow')
-
-  const [bitiHost, setBitiHost] = React.useState('24')
-
-
-
-  const handleChangeInputAdresaIP = (valoare) => {
-    setAdresaIP(valoare)
-  }
-
-  const [selectedSMcidr, setSelectedSMcidr] = React.useState("8");
-  const [selectedSM, setSelectedSM] = React.useState("255.255.255.255");
+  const [bitiNetwork, setBitiNetwork]                       = React.useState('8')
+  const [subnetmask, setSubnetmask]                   = React.useState('255.0.0.0')
+  const [notatieAdresaIP, setNotatieAdresaIP]         = React.useState('')
+  const [notatieSubnetMask, setNotatieSubnetMask]     = React.useState('')
+  const [notatieNetwork, setNotatieNetwork]           = React.useState('')
+  const [notatieBroadcast, setNotatieBroadcast]       = React.useState('')
+  const [numarHosturi, setNumarHosturi]               = React.useState('16,777,214')
+  const [clasaIP, setClasaIp]                         = React.useState('C')
 
   const dataSM = 
   [ 
@@ -36,11 +29,6 @@ export default function App() {
     '/8', '/9', '/10', '/11', '/12', '/13', '/14', '/15', '/16', '/17', '/18', '/19', '/20', '/21', '/22', '/23', '/24', '/25', '/26', '/27', '/28', '/29', '/30'
   ]
 
-  //host bits =  (32 - nr de biti ai SM)
-  //nr_hosturi = (2 la puterea  host bits) - 2 //-2 pt ca nu utilizam prima si ultima adresa care e broadcastul
-
-
-  /* Check if string is IP */
   function checkIfValidIP(str) {
     //expresie regex pt a determina daca string-ul este o adresa IP valida
     //string de format nr.nr.nr.nr unde fiecare numar poate fi intre 0 si 255
@@ -48,30 +36,157 @@ export default function App() {
     return regexExp.test(str);
   }
 
+  //functie convertire adresa IPv4 in binar
+  const decToBin = (adresa) =>  
+  {
+    const octeti = adresa.split('.') //octetii despartiti de '.'
+    //luare fiecare octet si convertire in binar
+    const octetiBinari = octeti.map(octet => {
+      const octetBinar = parseInt(octet, 10).toString(2);
+      return '0'.repeat(8 - octetBinar.length) + octetBinar; 
+    });
+    //Octeti despartiti prin punct pt a forma adresa binara
+    const adresaBinara = octetiBinari.join('.')
+    return adresaBinara;
+  }
+
+  const binToDec = (adresa) => {
+    const octetiBinari = adresa.split('.');//octetii despartiti de '.'
+    const octetiDecimali = octetiBinari.map(octet => parseInt(octet, 2)) //luare fiecare octet si convertire in decimal prin parseInt
+    const adresaDec = octetiDecimali.join('.') //punct intre octeti
+    return adresaDec
+  }
+
+  const rezolvareNetworkPortion = () => {
+    //cate zerouri sau 1-uri vor fi la final stabilim in functie de bitii portiunii de network 
+    //bitii de network NU SE SCHIMBA
+    //bitilor de network li se adauga zerouri la final pt a afla adresa de Network
+    //sau 1-uri pt a afla adresa de broadcast
+    adresa = decToBin(adresaIP)
+    let adresaCharArray = adresa.split('.')     //impartim string-ul bazat pe caracterul '.'
+    adresaCharArray = adresaCharArray.join('')  //renuntam la '.'
+    pozitii = 32 - bitiNetwork 
+    //se taie ultimele pozitii (nr pozitii = biti host) pt a avea portiunea de network 
+    //portiunea bitilor de host SE SCHIMBA
+    //portiunea bitilor de network NU SE SCHIMBA
+    const networkPortion = adresaCharArray.slice(0, adresaCharArray.length - pozitii)
+    return networkPortion
+  }
+
+
+  const rezolvareNetworkSauBroadcast = (nr) => {
+    //se adauga 0 sau 1 in functie de cati biti network sunt (cati biti de host sunt ramasi)
+    //nr = 0 sau 1
+    const networkPortion = rezolvareNetworkPortion()
+    let adresaBruta =  networkPortion 
+    if(nr === 0)
+      adresaBruta = adresaBruta + '0'.repeat(pozitii) 
+    else
+      adresaBruta = adresaBruta + '1'.repeat(pozitii) 
+    let adresa = ''
+    for(i = 0; i < adresaBruta.length; i += 8){
+      adresa = adresa + adresaBruta.substring(i, i + 8)
+      adresa = adresa + '.'
+    }
+    adresa = adresa.slice(0, -1)//elimin ultimul punct
+    return adresa
+  }
+
+  const handleChangeInputAdresaIP = (valoare) => {
+    setAdresaIP(valoare)
+  }
+
+  const setareNotatii = () => {
+    if(checked === 'DEC'){
+      setNotatieAdresaIP  (adresaIP)
+      setNotatieSubnetMask(subnetmask)
+      setNotatieNetwork   ( binToDec( rezolvareNetworkSauBroadcast(0) ) )
+      setNotatieBroadcast ( binToDec( rezolvareNetworkSauBroadcast(1) ) )
+    }
+    if(checked === 'BIN'){
+      setNotatieAdresaIP  (decToBin(adresaIP))
+      setNotatieSubnetMask(decToBin(subnetmask))
+      setNotatieNetwork   (rezolvareNetworkSauBroadcast(0))
+      setNotatieBroadcast (rezolvareNetworkSauBroadcast(1))
+    }
+
+  }
+
+  const setareNotatiiGoale = () => {
+    setNotatieAdresaIP('')
+    setNotatieSubnetMask('')
+    setNotatieNetwork('')
+    setNotatieBroadcast('')
+  }
+
+  const setareClasa = () => {
+    const primul_octet = adresaIP.split('.')[0]
+    if(primul_octet >= 0 && primul_octet <= 127)
+      setClasaIp('A')
+    if(primul_octet >= 128 && primul_octet <= 191)
+      setClasaIp('B')
+    if(primul_octet >= 192 && primul_octet <= 223)
+      setClasaIp('C')
+    if(primul_octet >= 224 && primul_octet <= 239)
+      setClasaIp('D')
+    if(primul_octet >= 240 && primul_octet <= 255)
+      setClasaIp('E')
+  }
+
+  useEffect( () => 
+   {
+    if(checked === 'DEC'){
+      setNotatieSubnetMask(subnetmask)
+      setNotatieNetwork   ( binToDec( rezolvareNetworkSauBroadcast(0) ) )
+      setNotatieBroadcast ( binToDec( rezolvareNetworkSauBroadcast(1) ) )
+    }
+    if(checked === 'BIN'){
+      setNotatieSubnetMask(decToBin(subnetmask))   
+      setNotatieNetwork   ( rezolvareNetworkSauBroadcast(0) )
+      setNotatieBroadcast ( rezolvareNetworkSauBroadcast(1) )
+    }
+  }, [subnetmask]
+  )
+
   useEffect( () => 
     {
-
       if(checkIfValidIP(adresaIP)){
-        setCuloareAdresaValida('cyan')
+        setCuloareAdresaValida('cyan') 
+        setareClasa()
+        setareNotatii()
         //setare valori ptr restul textelor bazat pe adresa IP primita
       }
+
       else{
         setCuloareAdresaValida('red')
-        //setare goale
+        setareNotatiiGoale()
       }
-
-
-    }, [adresaIP] //adaugat si subnetmask
-
+    }, [adresaIP] 
   )
 
-  useEffect( ()=>
+  useEffect( () => 
     {
-
-      console.log(bitiHost)
-    }, [bitiHost]
+      if(checkIfValidIP(adresaIP)){
+        setareNotatii()
+      }
+      else{
+        setNotatieAdresaIP('')
+        setareNotatiiGoale()
+      }
+        
+    }, [checked]
   )
 
+  useEffect( () => 
+    {
+      //network bits = nr biti subnet mask
+      //host bits  = 32 - network bits
+      //nr hosturi = 2 la puterea host bits - 2 (-2 pt ca nu utilizam prima si ultima adresa care e broadcastul)
+      const host_bits  =  32 - bitiNetwork 
+      const nr_hosturi =  2**host_bits - 2  
+      setNumarHosturi(nr_hosturi)
+    }, [bitiNetwork]
+  )
 
   const dropdownSMRef = useRef()
   const dropdownCIDR = useRef()
@@ -104,9 +219,9 @@ export default function App() {
           onSelect=
           { (selectedItem, index) => 
               {
-                //console.log(selectedItem, index)
                 dropdownCIDR.current.selectIndex(index) 
-                setBitiHost(dataCIDR[index].replace(/^./, ""))
+                setBitiNetwork(dataCIDR[index].replace(/^./, ""))
+                setSubnetmask(selectedItem)
               }
           }
           buttonStyle={[styles.text_input, {}]}
@@ -125,7 +240,8 @@ export default function App() {
           { (selectedItem, index) => 
               {
                 dropdownSMRef.current.selectIndex(index) 
-                setBitiHost(dataCIDR[index].replace(/^./, ""))
+                setBitiNetwork(dataCIDR[index].replace(/^./, ""))
+                setSubnetmask(dataSM[index])
               }
           }
           buttonStyle={[styles.text_input, {}]}
@@ -135,19 +251,19 @@ export default function App() {
         />
       </View>
 
-
+ 
       <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e'} ]}>
         <Text style={ [ styles.text, {fontSize: 33} ] }>Details</Text>
       </View>      
       <View style={ [ styles.container_row, {} ] }>
         <View style={{flexDirection: 'column', width: '40%'}}>
           <View style={ [ styles.container_row, {} ]}>
-            <Text style={styles.text}>IP Class     </Text>
-            <Text style={ [ styles.text_center, {} ] }>ABC</Text>
+            <Text style={styles.text}>Class</Text>
+            <Text style={ [ styles.text_center, {} ] }> {clasaIP} </Text>
           </View>
           <View style={ [ styles.container_row, {} ]}>
             <Text style={styles.text}>Hosts</Text>
-            <Text style={ [ styles.text_center, {} ] }>16,777,214</Text>
+            <Text style={ [ styles.text_center, {} ] }> {numarHosturi} </Text>
           </View>
         </View>
         <View style={{flexDirection: 'column', width: '60%' }}>
@@ -196,129 +312,21 @@ export default function App() {
         </View>
       </View>
       <View style={ [ styles.container_row, {} ]}>
-        <Text style={styles.text}> Adresa IPv4 </Text>
-        <Text style={ [ styles.text_center, {} ] }>...</Text>
+        <Text style={styles.text}> IP Adress </Text>
+        <Text style={ [ styles.text_center, {fontSize: 17, width: '70%'} ] }> {notatieAdresaIP} </Text>
       </View>
       <View style={ [ styles.container_row, {} ]}>
         <Text style={styles.text}> Subnet Mask </Text>
-        <Text style={ [ styles.text_center, {} ] }>...</Text>
+        <Text style={ [ styles.text_center, {fontSize: 17, width: '70%'} ] }> {notatieSubnetMask} </Text>
       </View>
       <View style={ [ styles.container_row, {} ]}>
-        <Text style={styles.text}> IP Range </Text>
-        <Text style={ [ styles.text_center, {} ] }>...</Text>
+        <Text style={styles.text}> Network  </Text>
+        <Text style={ [ styles.text_center, {fontSize: 17, width: '70%'} ] }> {notatieNetwork} </Text>
       </View>
       <View style={ [ styles.container_row, {} ]}>
         <Text style={styles.text}> Broadcast </Text>
-        <Text style={ [ styles.text_center, {} ] }>...</Text>
+        <Text style={ [ styles.text_center, {fontSize: 17, width: '70%'} ] }> {notatieBroadcast} </Text>
       </View>
-
-      <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e'} ]}>
-        <Text style={ [ styles.text, {fontSize: 33} ] }>Subnets table</Text>
-      </View>
-
-      <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e', justifyContent: 'space-around'} ]}>
-        <Text style={ [ styles.text, {fontSize: 24} ] }>Network</Text>
-        <Text style={ [ styles.text, {fontSize: 24} ] }>First Host</Text>
-        <Text style={ [ styles.text, {fontSize: 24} ] }>Last Host</Text>
-        <Text style={ [ styles.text, {fontSize: 24} ] }>Broadcast</Text>
-      </View>
-
-      <ScrollView>
-        <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e', justifyContent: 'space-around'} ]}>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-        </View>
-        <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e', justifyContent: 'space-around'} ]}>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-        </View>
-        <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e', justifyContent: 'space-around'} ]}>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-        </View>
-        <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e', justifyContent: 'space-around'} ]}>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-        </View>
-        <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e', justifyContent: 'space-around'} ]}>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-        </View>
-        <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e', justifyContent: 'space-around'} ]}>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-        </View>
-        <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e', justifyContent: 'space-around'} ]}>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-        </View>
-        <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e', justifyContent: 'space-around'} ]}>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-        </View>
-        <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e', justifyContent: 'space-around'} ]}>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-        </View>
-        <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e', justifyContent: 'space-around'} ]}>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-        </View>
-        <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e', justifyContent: 'space-around'} ]}>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-        </View>
-        <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e', justifyContent: 'space-around'} ]}>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-        </View>
-        <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e', justifyContent: 'space-around'} ]}>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-        </View>
-        <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e', justifyContent: 'space-around'} ]}>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-        </View>
-        <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e', justifyContent: 'space-around'} ]}>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-          <Text style={ [ styles.text_center, {fontSize: 12} ] }>192.192.192.192</Text>
-        </View>
-      </ScrollView>
-
-      
-      
-
     </View>     
        
   );
@@ -352,6 +360,8 @@ const styles = StyleSheet.create({
     width: '55%',
   },
 
+
+
   text_input:{
     backgroundColor: 'white',
     width: '55%',
@@ -363,5 +373,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'cyan',
   },
+
 
 });
