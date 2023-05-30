@@ -6,9 +6,9 @@ import styles from './styles';
 
 const IPCalculator = ( 
         {   
-            culoareAdresaValida, dataCIDR, dataSM, clasaIP, numarHosturi, hostMin, hostMax, 
+            culoareAdresaValida, dataSMbits, dataSM, clasaIP, numarHosturi, hostMin, hostMax, 
             checked, setChecked, notatieAdresaIP, notatieBroadcast, notatieNetwork, notatieSubnetMask, 
-            handleChangeInputAdresaIP, adresaIP, dropdownSMRef, dropdownCIDR, setBitiNetwork, setSubnetmask
+            handleChangeInputAdresaIP, adresaIP, dropdownSMRef, dropdownSMbitsRef, setBitiNetwork, setSubnetmask
         } 
     ) => {
     return (
@@ -38,8 +38,8 @@ const IPCalculator = (
             onSelect=
             { (selectedItem, index) => 
                 {
-                  dropdownCIDR.current.selectIndex(index) 
-                  setBitiNetwork(dataCIDR[index].replace(/^./, ""))
+                  dropdownSMbitsRef.current.selectIndex(index) 
+                  setBitiNetwork(dataSMbits[index].replace(/^./, ""))
                   setSubnetmask(selectedItem)
                 }
             }
@@ -50,16 +50,16 @@ const IPCalculator = (
           />
         </View>
         <View style={ [ styles.container_row, {marginTop: 7} ]}>
-          <Text style={ [ styles.text, {} ] }>CIDR</Text>
+          <Text style={ [ styles.text, {} ] }>SM bits</Text>
           <SelectDropdown
-            ref={dropdownCIDR}
-            data={dataCIDR}
+            ref={dropdownSMbitsRef}
+            data={dataSMbits}
             defaultValueByIndex={0}
             onSelect=
             { (selectedItem, index) => 
                 {
                   dropdownSMRef.current.selectIndex(index) 
-                  setBitiNetwork(dataCIDR[index].replace(/^./, ""))
+                  setBitiNetwork(dataSMbits[index].replace(/^./, ""))
                   setSubnetmask(dataSM[index])
                 }
             }

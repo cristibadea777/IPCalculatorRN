@@ -17,6 +17,17 @@ export default function App() {
   const [hostMin, setHostMin]                         = React.useState('')
   const [hostMax, setHostMax]                         = React.useState('')  
 
+  //cu Subnet Mask aflam portiunile de Network si Host. 
+  //dupa ce convertim adresa IP in binar
+  //primii X biti ai adresei IP vor fi de Network, restul de Host
+  //unde X este dat de bitii Subnet Mask (/X)
+  //bitii de Network NU se pot schimba, raman aceias, doar bitii de host se transforma in 0 - si aflam adresa de Network, 
+  //apoi bitii de host se transforma in 1 si aflam adresa de Broadcast
+  //tot ce este intre adresa de network si adresa de broadcast se numesc hosturi
+  //numarul de hosturi il putem afla din formula 2^nr_biti_host - 2
+  //unde nr_biti_host reprezinta numarul de biti ramasi din 32 - X, unde X reprezinta numarul bitilor Subnet Mask-ului
+  //iar -2 pentru ca adresa de Network si adresa de Broadcast nu sunt hosturi valide, tot ce este intre ele sunt subretele valide
+
   const dataSM = 
   [ 
     '255.0.0.0','255.128.0.0','255.192.0.0','255.224.0.0','255.240.0.0','255.248.0.0','255.252.0.0','255.254.0.0','255.255.0.0',
@@ -24,7 +35,7 @@ export default function App() {
     '255.255.255.0','255.255.255.128','255.255.255.192','255.255.255.224','255.255.255.240','255.255.255.248','255.255.255.252',
   ]
 
-  const dataCIDR = 
+  const dataSMbits = 
   [
     '/8', '/9', '/10', '/11', '/12', '/13', '/14', '/15', '/16', '/17', '/18', '/19', '/20', '/21', '/22', '/23', '/24', '/25', '/26', '/27', '/28', '/29', '/30'
   ]
@@ -46,15 +57,28 @@ export default function App() {
       return '0'.repeat(8 - octetBinar.length) + octetBinar; 
     });
     //Octeti despartiti prin punct pt a forma adresa binara
-    const adresaBinara = octetiBinari.join('.')
+    const adresaBinara = octetiBinari.join('.') //punct intre octeti
     return adresaBinara;
   }
 
   const binToDec = (adresa) => {
-    const octetiBinari = adresa.split('.');//octetii despartiti de '.'
+    const octetiBinari = adresa.split('.');
     const octetiDecimali = octetiBinari.map(octet => parseInt(octet, 2)) //luare fiecare octet si convertire in decimal prin parseInt
-    const adresaDec = octetiDecimali.join('.') //punct intre octeti
+    const adresaDec = octetiDecimali.join('.') 
     return adresaDec
+  }
+
+  const binToHex = (adresa) => {
+    const octetiBinari = adresa.split('.')
+
+    const octetiHex = octetiBinari.map(octet => {
+      const octetDecimal = parseInt(octet, 2);
+      const octetHex = octetDecimal.toString(16).padStart(2, '0');
+      return octetHex.padStart(2, '0');
+    });
+  
+    const hexAdresa = octetiHex.join('');
+    return hexAdresa;  
   }
 
   const incrementare = (adresa) => {
@@ -148,7 +172,12 @@ export default function App() {
       setNotatieNetwork   (rezolvareNetworkSauBroadcast(0))
       setNotatieBroadcast (rezolvareNetworkSauBroadcast(1))
     }
-
+    if(checked === 'HEX'){
+      setNotatieAdresaIP( binToHex( decToBin(adresaIP) ) )
+      setNotatieSubnetMask( binToHex( decToBin(subnetmask) ) )
+      setNotatieNetwork( binToHex( rezolvareNetworkSauBroadcast(0) ) )
+      setNotatieBroadcast( binToHex( rezolvareNetworkSauBroadcast(1) ) )
+    }
 
     //asta trebuie incrementat cu 1
     let netadress = binToDec( rezolvareNetworkSauBroadcast(0) )
@@ -158,7 +187,6 @@ export default function App() {
     let broadcastadress = binToDec( rezolvareNetworkSauBroadcast(1) )
     let hostmax = decrementare(broadcastadress)
     setHostMax(hostmax)  
-
 
   }
 
@@ -195,6 +223,12 @@ export default function App() {
       setNotatieNetwork   ( rezolvareNetworkSauBroadcast(0) )
       setNotatieBroadcast ( rezolvareNetworkSauBroadcast(1) )
     }
+    if(checked === 'HEX'){
+      setNotatieAdresaIP( binToHex( decToBin(adresaIP) ) )
+      setNotatieSubnetMask( binToHex( decToBin(subnetmask) ) )
+      setNotatieNetwork( binToHex( rezolvareNetworkSauBroadcast(0) ) )
+      setNotatieBroadcast( binToHex( rezolvareNetworkSauBroadcast(1) ) )
+    }
   }, [subnetmask]
   )
 
@@ -203,8 +237,7 @@ export default function App() {
       if(checkIfValidIP(adresaIP)){
         setCuloareAdresaValida('cyan') 
         setareClasa()
-        setareNotatii()
-        //setare valori ptr restul textelor bazat pe adresa IP primita
+        setareNotatii() //setare valori ptr restul textelor bazat pe adresa IP primita
       }
 
       else{
@@ -239,30 +272,17 @@ export default function App() {
   )
 
   const dropdownSMRef = useRef()
-  const dropdownCIDR = useRef()
+  const dropdownSMbitsRef = useRef()
 
   return (    
     
     <IPCalculator
-      culoareAdresaValida = {culoareAdresaValida}
-      dataCIDR = {dataCIDR}
-      dataSM = {dataSM}
-      clasaIP = {clasaIP} 
-      numarHosturi = {numarHosturi} 
-      hostMin = {hostMin}
-      hostMax = {hostMax} 
-      checked = {checked} 
-      setChecked = {setChecked} 
-      notatieAdresaIP = {notatieAdresaIP} 
-      notatieBroadcast = {notatieBroadcast} 
-      notatieNetwork = {notatieNetwork} 
-      notatieSubnetMask = {notatieSubnetMask} 
-      handleChangeInputAdresaIP = {handleChangeInputAdresaIP} 
-      adresaIP = {adresaIP} 
-      dropdownSMRef = {dropdownSMRef} 
-      dropdownCIDR = {dropdownCIDR}
-      setBitiNetwork = {setBitiNetwork}
-      setSubnetmask = {setSubnetmask}
+      culoareAdresaValida = {culoareAdresaValida}   dataSMbits = {dataSMbits}               dataSM = {dataSM}   clasaIP = {clasaIP} 
+      numarHosturi = {numarHosturi}                 hostMin = {hostMin}                     hostMax = {hostMax} checked = {checked} 
+      setChecked = {setChecked}                     notatieAdresaIP = {notatieAdresaIP}     notatieBroadcast = {notatieBroadcast} 
+      notatieNetwork = {notatieNetwork}             notatieSubnetMask = {notatieSubnetMask} handleChangeInputAdresaIP = {handleChangeInputAdresaIP} 
+      adresaIP = {adresaIP}                         dropdownSMRef = {dropdownSMRef}         dropdownSMbits = {dropdownSMbitsRef} 
+      setBitiNetwork = {setBitiNetwork}             setSubnetmask = {setSubnetmask}
     />
     
   )
