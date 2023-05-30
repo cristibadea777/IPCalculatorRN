@@ -3,7 +3,7 @@ import IPCalculator from './components/IPCalculator';
 
 export default function App() {
 
-  const [checked, setChecked] = React.useState('DEC');
+  const [checked, setChecked]                         = React.useState('DEC');
   const [adresaIP, setAdresaIP]                       = React.useState('192.168.0.0')
   const [culoareAdresaValida, setCuloareAdresaValida] = React.useState('yellow')
   const [bitiNetwork, setBitiNetwork]                 = React.useState('8')
