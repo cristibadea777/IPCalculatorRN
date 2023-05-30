@@ -1,14 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import { ScrollView, StatusBar, StyleSheet, Text, TextInput, View} from 'react-native';
-import { RadioButton } from 'react-native-paper';
-import SelectDropdown from 'react-native-select-dropdown';
+import IPCalculator from './components/IPCalculator';
 
 export default function App() {
 
   const [checked, setChecked] = React.useState('DEC');
   const [adresaIP, setAdresaIP]                       = React.useState('192.168.0.0')
   const [culoareAdresaValida, setCuloareAdresaValida] = React.useState('yellow')
-  const [bitiNetwork, setBitiNetwork]                       = React.useState('8')
+  const [bitiNetwork, setBitiNetwork]                 = React.useState('8')
   const [subnetmask, setSubnetmask]                   = React.useState('255.0.0.0')
   const [notatieAdresaIP, setNotatieAdresaIP]         = React.useState('')
   const [notatieSubnetMask, setNotatieSubnetMask]     = React.useState('')
@@ -16,6 +14,8 @@ export default function App() {
   const [notatieBroadcast, setNotatieBroadcast]       = React.useState('')
   const [numarHosturi, setNumarHosturi]               = React.useState('16,777,214')
   const [clasaIP, setClasaIp]                         = React.useState('C')
+  const [hostMin, setHostMin]                         = React.useState('')
+  const [hostMax, setHostMax]                         = React.useState('')  
 
   const dataSM = 
   [ 
@@ -57,12 +57,54 @@ export default function App() {
     return adresaDec
   }
 
-  const rezolvareNetworkPortion = () => {
+  const incrementare = (adresa) => {
+    const octeti    = adresa.split('.') 
+    octeti[3] = parseInt(octeti[3]) + 1 
+    if(octeti[3] > 255){
+      octeti[3] = 0
+      octeti[2] = parseInt(octeti[2]) + 1
+    }
+    if(octeti[2] > 255){
+      octeti[2] = 0
+      octeti[1] = parseInt(octeti[1]) + 1
+    }
+    if(octeti[1] === 255){
+      octeti[1] = 0
+      octeti[0] = parseInt(octeti[0]) + 1
+    }
+    if(octeti[0] > 255)
+      return ''
+    return octeti.join('.') 
+  }
+
+  const decrementare = (adresa) => {
+    const octeti    = adresa.split('.') 
+    octeti[3] = parseInt(octeti[3]) - 1 
+    if(octeti[3] < 0){
+      octeti[3] = 255
+      octeti[2] = parseInt(octeti[2]) - 1
+    }
+    if(octeti[2] < 0){
+      octeti[2] = 255
+      octeti[1] = parseInt(octeti[1]) - 1
+    }
+    if(octeti[1] < 0){
+      octeti[1] = 255
+      octeti[0] = parseInt(octeti[0]) - 1
+    }
+    if(octeti[0] < 0)
+      return ''
+    return octeti.join('.') 
+  }
+
+  const rezolvareNetworkSauBroadcast = (nr) => {
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //pentru PORTIUNEA DE NETWORK
     //cate zerouri sau 1-uri vor fi la final stabilim in functie de bitii portiunii de network 
     //bitii de network NU SE SCHIMBA
     //bitilor de network li se adauga zerouri la final pt a afla adresa de Network
     //sau 1-uri pt a afla adresa de broadcast
-    adresa = decToBin(adresaIP)
+    let adresa = decToBin(adresaIP)
     let adresaCharArray = adresa.split('.')     //impartim string-ul bazat pe caracterul '.'
     adresaCharArray = adresaCharArray.join('')  //renuntam la '.'
     pozitii = 32 - bitiNetwork 
@@ -70,20 +112,17 @@ export default function App() {
     //portiunea bitilor de host SE SCHIMBA
     //portiunea bitilor de network NU SE SCHIMBA
     const networkPortion = adresaCharArray.slice(0, adresaCharArray.length - pozitii)
-    return networkPortion
-  }
-
-
-  const rezolvareNetworkSauBroadcast = (nr) => {
+    
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //pentru PORTIUNEA DE HOST (sa aflam Network Adress si Broadcast Adress)
     //se adauga 0 sau 1 in functie de cati biti network sunt (cati biti de host sunt ramasi)
     //nr = 0 sau 1
-    const networkPortion = rezolvareNetworkPortion()
     let adresaBruta =  networkPortion 
     if(nr === 0)
       adresaBruta = adresaBruta + '0'.repeat(pozitii) 
     else
       adresaBruta = adresaBruta + '1'.repeat(pozitii) 
-    let adresa = ''
+    adresa = ''
     for(i = 0; i < adresaBruta.length; i += 8){
       adresa = adresa + adresaBruta.substring(i, i + 8)
       adresa = adresa + '.'
@@ -109,6 +148,17 @@ export default function App() {
       setNotatieNetwork   (rezolvareNetworkSauBroadcast(0))
       setNotatieBroadcast (rezolvareNetworkSauBroadcast(1))
     }
+
+
+    //asta trebuie incrementat cu 1
+    let netadress = binToDec( rezolvareNetworkSauBroadcast(0) )
+    let hostmin = incrementare(netadress)
+    setHostMin(hostmin)  
+    //asta trebuie decrementat cu 1
+    let broadcastadress = binToDec( rezolvareNetworkSauBroadcast(1) )
+    let hostmax = decrementare(broadcastadress)
+    setHostMax(hostmax)  
+
 
   }
 
@@ -192,187 +242,29 @@ export default function App() {
   const dropdownCIDR = useRef()
 
   return (    
-
-    <View style={styles.container_principal}>
-
-      <StatusBar style="auto"> </StatusBar>
-
-      <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e'} ]}>
-        <Text style={ [ styles.text, {fontSize: 33} ] }>Input</Text>
-      </View>
-      <View style={ [ styles.container_row, {} ]}>
-        <Text style={ [ styles.text, {} ] }>IP Adress</Text>
-        <TextInput 
-          keyboardType='numeric' 
-          style={ [ styles.text_input, {borderBottomColor: culoareAdresaValida } ] }
-          onChangeText={handleChangeInputAdresaIP}
-          value={adresaIP}
-        >
-        </TextInput>
-      </View>
-      <View style={ [ styles.container_row, {marginTop: 7} ]}>
-        <Text style={ [ styles.text, {} ] }>Subnet Mask</Text>
-        <SelectDropdown
-          data={dataSM}
-          ref={dropdownSMRef}
-          defaultValueByIndex={0}
-          onSelect=
-          { (selectedItem, index) => 
-              {
-                dropdownCIDR.current.selectIndex(index) 
-                setBitiNetwork(dataCIDR[index].replace(/^./, ""))
-                setSubnetmask(selectedItem)
-              }
-          }
-          buttonStyle={[styles.text_input, {}]}
-          buttonTextStyle={{ fontSize: 20, color: 'white'}}
-          rowStyle={{backgroundColor: '#1e1e1e'}}
-          rowTextStyle={{color: 'white', fontSize: 20}}
-        />
-      </View>
-      <View style={ [ styles.container_row, {marginTop: 7} ]}>
-        <Text style={ [ styles.text, {} ] }>CIDR</Text>
-        <SelectDropdown
-          ref={dropdownCIDR}
-          data={dataCIDR}
-          defaultValueByIndex={0}
-          onSelect=
-          { (selectedItem, index) => 
-              {
-                dropdownSMRef.current.selectIndex(index) 
-                setBitiNetwork(dataCIDR[index].replace(/^./, ""))
-                setSubnetmask(dataSM[index])
-              }
-          }
-          buttonStyle={[styles.text_input, {}]}
-          buttonTextStyle={{ fontSize: 20, color: 'white'}}
-          rowStyle={{backgroundColor: '#1e1e1e'}}
-          rowTextStyle={{color: 'white', fontSize: 20}}
-        />
-      </View>
-
- 
-      <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e'} ]}>
-        <Text style={ [ styles.text, {fontSize: 33} ] }>Details</Text>
-      </View>      
-      <View style={ [ styles.container_row, {} ] }>
-        <View style={{flexDirection: 'column', width: '40%'}}>
-          <View style={ [ styles.container_row, {} ]}>
-            <Text style={styles.text}>Class</Text>
-            <Text style={ [ styles.text_center, {} ] }> {clasaIP} </Text>
-          </View>
-          <View style={ [ styles.container_row, {} ]}>
-            <Text style={styles.text}>Hosts</Text>
-            <Text style={ [ styles.text_center, {} ] }> {numarHosturi} </Text>
-          </View>
-        </View>
-        <View style={{flexDirection: 'column', width: '60%' }}>
-          <View style={ [ styles.container_row, {} ]}>
-            <Text style={styles.text}> Host Min </Text>
-            <Text style={ [ styles.text_center, {} ] }>192.192.192.192</Text>
-          </View>
-          <View style={ [ styles.container_row, {} ]}>
-            <Text style={styles.text}> Host Max </Text>
-            <Text style={ [ styles.text_center, {} ] }>192.192.192.192</Text>
-          </View>
-          <View style={{flex: 1}}></View>
-        </View>
-      </View>
-
-      <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e'} ]}>
-            <Text style={ [ styles.text, {fontSize: 33} ] }>Notations</Text>
-      </View>
-      <View style={[styles.container_row, {padding: 8}]}>
-        <View style={{flexDirection: 'row'}}>
-          <RadioButton
-            value="DEC"
-            status={ checked === 'DEC' ? 'checked' : 'unchecked' }
-            onPress={() => setChecked('DEC')}
-            color='white'
-          />
-          <Text style={styles.text}>DEC</Text>
-        </View>
-        <View style={{flexDirection: 'row'}}>
-          <RadioButton
-            value="HEX"
-            status={ checked === 'HEX' ? 'checked' : 'unchecked' }
-            onPress={() => setChecked('HEX')}
-            color='white'
-          />
-          <Text style={styles.text}>HEX</Text>
-        </View>
-        <View style={{flexDirection: 'row'}}>
-          <RadioButton
-            value="BIN"
-            status={ checked === 'BIN' ? 'checked' : 'unchecked' }
-            onPress={() => setChecked('BIN')}
-            color='white'
-          />
-          <Text style={styles.text}>BIN</Text>
-        </View>
-      </View>
-      <View style={ [ styles.container_row, {} ]}>
-        <Text style={styles.text}> IP Adress </Text>
-        <Text style={ [ styles.text_center, {fontSize: 17, width: '70%'} ] }> {notatieAdresaIP} </Text>
-      </View>
-      <View style={ [ styles.container_row, {} ]}>
-        <Text style={styles.text}> Subnet Mask </Text>
-        <Text style={ [ styles.text_center, {fontSize: 17, width: '70%'} ] }> {notatieSubnetMask} </Text>
-      </View>
-      <View style={ [ styles.container_row, {} ]}>
-        <Text style={styles.text}> Network  </Text>
-        <Text style={ [ styles.text_center, {fontSize: 17, width: '70%'} ] }> {notatieNetwork} </Text>
-      </View>
-      <View style={ [ styles.container_row, {} ]}>
-        <Text style={styles.text}> Broadcast </Text>
-        <Text style={ [ styles.text_center, {fontSize: 17, width: '70%'} ] }> {notatieBroadcast} </Text>
-      </View>
-    </View>     
-       
-  );
-
+    
+    <IPCalculator
+      culoareAdresaValida = {culoareAdresaValida}
+      dataCIDR = {dataCIDR}
+      dataSM = {dataSM}
+      clasaIP = {clasaIP} 
+      numarHosturi = {numarHosturi} 
+      hostMin = {hostMin}
+      hostMax = {hostMax} 
+      checked = {checked} 
+      setChecked = {setChecked} 
+      notatieAdresaIP = {notatieAdresaIP} 
+      notatieBroadcast = {notatieBroadcast} 
+      notatieNetwork = {notatieNetwork} 
+      notatieSubnetMask = {notatieSubnetMask} 
+      handleChangeInputAdresaIP = {handleChangeInputAdresaIP} 
+      adresaIP = {adresaIP} 
+      dropdownSMRef = {dropdownSMRef} 
+      dropdownCIDR = {dropdownCIDR}
+      setBitiNetwork = {setBitiNetwork}
+      setSubnetmask = {setSubnetmask}
+    />
+    
+  )
 }
 
-const styles = StyleSheet.create({
-
-  container_principal: {
-    flex: 1,
-    backgroundColor: '#232B2B',
-  },
-
-  container_row:{
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-
-  text:{
-    fontSize: 20,
-    color: 'cyan',
-    textAlign: 'left',
-    padding: 7
-  },
-
-  text_center:{
-    fontSize: 20,
-    color: 'white',
-    textAlign: 'center',
-    width: '55%',
-  },
-
-
-
-  text_input:{
-    backgroundColor: 'white',
-    width: '55%',
-    fontSize: 20,
-    color: 'white',
-    textAlign: 'center',
-    backgroundColor: '#232B2B',
-    color: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: 'cyan',
-  },
-
-
-});
