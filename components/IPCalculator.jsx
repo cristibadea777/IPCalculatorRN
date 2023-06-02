@@ -6,9 +6,9 @@ import styles from './styles';
 
 const IPCalculator = ( 
         {   
-            culoareAdresaValida, dataSMbits, dataSM, clasaIP, numarHosturi, hostMin, hostMax, 
-            checked, setChecked, notatieAdresaIP, notatieBroadcast, notatieNetwork, notatieSubnetMask, 
-            handleChangeInputAdresaIP, adresaIP, dropdownSMRef, dropdownSMbitsRef, setBitiNetwork, setSubnetmask
+            culoareAdresaValida, dataSMbits, dataSM, clasaIP, numarHosturi, hostMin, hostMax, notatieHostMin,
+            notatieHostMax, checked, setChecked, notatieAdresaIP, notatieBroadcast, notatieNetwork, notatieSubnetMask, 
+            handleChangeInputAdresaIP, adresaIP, dropdownSMRef, dropdownSMbitsRef, setBitiNetwork, setSubnetmask,
         } 
     ) => {
     return (
@@ -16,8 +16,8 @@ const IPCalculator = (
 
         <StatusBar style="auto"> </StatusBar>
     
-        <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e'} ]}>
-          <Text style={ [ styles.text, {fontSize: 33} ] }>Input</Text>
+        <View style={ [ styles.container_row_titlu, {} ]}>
+          <Text style={ [ styles.text_titlu,  {} ] }>INPUT</Text>
         </View>
         <View style={ [ styles.container_row, {} ]}>
           <Text style={ [ styles.text, {} ] }>IP Adress</Text>
@@ -71,35 +71,20 @@ const IPCalculator = (
         </View>
     
     
-        <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e'} ]}>
-          <Text style={ [ styles.text, {fontSize: 33} ] }>Details</Text>
+        <View style={ [ styles.container_row_titlu, {marginTop: 7} ]}>
+          <Text style={ [ styles.text_titlu, {} ] }>DETAILS</Text>
         </View>      
-        <View style={ [ styles.container_row, {} ] }>
-          <View style={{flexDirection: 'column', width: '40%'}}>
             <View style={ [ styles.container_row, {} ]}>
               <Text style={styles.text}>Class</Text>
               <Text style={ [ styles.text_center, {} ] }> {clasaIP} </Text>
-            </View>
-            <View style={ [ styles.container_row, {} ]}>
+        </View>
+        <View style={ [ styles.container_row, {} ]}>
               <Text style={styles.text}>Hosts</Text>
               <Text style={ [ styles.text_center, {} ] }> {numarHosturi} </Text>
-            </View>
-          </View>
-          <View style={{flexDirection: 'column', width: '60%' }}>
-            <View style={ [ styles.container_row, {} ]}>
-              <Text style={styles.text}> Host Min </Text>
-              <Text style={ [ styles.text_center, {} ] }>{hostMin}</Text>
-            </View>
-            <View style={ [ styles.container_row, {} ]}>
-              <Text style={styles.text}> Host Max </Text>
-              <Text style={ [ styles.text_center, {} ] }> {hostMax} </Text>
-            </View>
-            <View style={{flex: 1}}></View>
-          </View>
         </View>
     
-        <View style={ [ styles.container_row, {backgroundColor: '#1e1e1e'} ]}>
-              <Text style={ [ styles.text, {fontSize: 33} ] }>Notations</Text>
+        <View style={ [ styles.container_row_titlu, {} ]}>
+              <Text style={ [ styles.text_titlu,  {}] }>NOTATIONS</Text>
         </View>
         <View style={[styles.container_row, {padding: 8}]}>
           <View style={{flexDirection: 'row'}}>
@@ -132,19 +117,27 @@ const IPCalculator = (
         </View>
         <View style={ [ styles.container_row, {} ]}>
           <Text style={styles.text}> IP Adress </Text>
-          <Text style={ [ styles.text_center, {fontSize: 17, width: '70%'} ] }> {notatieAdresaIP} </Text>
+          <Text style={ [ styles.text_center, {fontSize: 17} ] }> {notatieAdresaIP} </Text>
         </View>
         <View style={ [ styles.container_row, {} ]}>
           <Text style={styles.text}> Subnet Mask </Text>
-          <Text style={ [ styles.text_center, {fontSize: 17, width: '70%'} ] }> {notatieSubnetMask} </Text>
+          <Text style={ [ styles.text_center, {fontSize: 17} ] }> {notatieSubnetMask} </Text>
         </View>
         <View style={ [ styles.container_row, {} ]}>
           <Text style={styles.text}> Network  </Text>
-          <Text style={ [ styles.text_center, {fontSize: 17, width: '70%'} ] }> {notatieNetwork} </Text>
+          <Text style={ [ styles.text_center, {fontSize: 17} ] }> {notatieNetwork} </Text>
         </View>
         <View style={ [ styles.container_row, {} ]}>
           <Text style={styles.text}> Broadcast </Text>
-          <Text style={ [ styles.text_center, {fontSize: 17, width: '70%'} ] }> {notatieBroadcast} </Text>
+          <Text style={ [ styles.text_center, {fontSize: 17} ] }> {notatieBroadcast} </Text>
+        </View>
+        <View style={ [ styles.container_row, {} ]}>
+          <Text style={styles.text}> IP Range </Text>
+          <Text style={ [ styles.text_center, {fontSize: 17} ] }> {notatieHostMin} </Text>
+        </View>
+        <View style={ [ styles.container_row, {} ]}>
+          <View></View>
+          <Text style={ [ styles.text_center, {fontSize: 17} ] }> {notatieHostMax} </Text>
         </View>
       </View>         
     )

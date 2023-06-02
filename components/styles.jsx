@@ -11,6 +11,22 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
+      margin: 2,
+    },
+
+    container_row_titlu:{
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      backgroundColor: '#1e1e1e'
+    },
+
+    text_titlu:{
+      fontSize: 25,
+      color: 'cyan',
+      textAlign: 'center',
+      margin: 7,
+      padding: 7
     },
   
     text:{
@@ -24,21 +40,18 @@ const styles = StyleSheet.create({
       fontSize: 20,
       color: 'white',
       textAlign: 'center',
-      width: '55%',
+      width: '70%',
     },
-  
-  
-  
+
     text_input:{
       backgroundColor: 'white',
-      width: '55%',
+      width: '70%',
       fontSize: 20,
       color: 'white',
       textAlign: 'center',
       backgroundColor: '#232B2B',
       color: 'white',
-      borderBottomWidth: 1,
-      borderBottomColor: 'cyan',
+      borderBottomColor: 'black',
     },
   
   

@@ -12,6 +12,8 @@ export default function App() {
   const [notatieSubnetMask, setNotatieSubnetMask]     = React.useState('')
   const [notatieNetwork, setNotatieNetwork]           = React.useState('')
   const [notatieBroadcast, setNotatieBroadcast]       = React.useState('')
+  const [notatieHostMin, setNotatieHostMin]           = React.useState('')
+  const [notatieHostMax, setNotatieHostMax]           = React.useState('')
   const [numarHosturi, setNumarHosturi]               = React.useState('16,777,214')
   const [clasaIP, setClasaIp]                         = React.useState('C')
   const [hostMin, setHostMin]                         = React.useState('')
@@ -76,9 +78,8 @@ export default function App() {
       const octetHex = octetDecimal.toString(16).padStart(2, '0');
       return octetHex.padStart(2, '0');
     });
-  
-    const hexAdresa = octetiHex.join('');
-    return hexAdresa;  
+    const adresaHex = octetiHex.join('.');
+    return adresaHex;  
   }
 
   const incrementare = (adresa) => {
@@ -161,20 +162,26 @@ export default function App() {
 
   const setareNotatii = () => {
     if(checked === 'DEC'){
-      setNotatieAdresaIP  (adresaIP)
-      setNotatieSubnetMask(subnetmask)
+      setNotatieAdresaIP  ( adresaIP  )
+      setNotatieSubnetMask( subnetmask)
+      setNotatieHostMin   ( hostMin )  
+      setNotatieHostMax   ( hostMax )  
       setNotatieNetwork   ( binToDec( rezolvareNetworkSauBroadcast(0) ) )
       setNotatieBroadcast ( binToDec( rezolvareNetworkSauBroadcast(1) ) )
     }
     if(checked === 'BIN'){
-      setNotatieAdresaIP  (decToBin(adresaIP))
-      setNotatieSubnetMask(decToBin(subnetmask))
-      setNotatieNetwork   (rezolvareNetworkSauBroadcast(0))
-      setNotatieBroadcast (rezolvareNetworkSauBroadcast(1))
+      setNotatieAdresaIP  ( decToBin(adresaIP)    )
+      setNotatieSubnetMask( decToBin(subnetmask)  )
+      setNotatieHostMin   ( decToBin(hostMin) )  
+      setNotatieHostMax   ( decToBin(hostMax) )  
+      setNotatieNetwork   ( rezolvareNetworkSauBroadcast(0) )
+      setNotatieBroadcast ( rezolvareNetworkSauBroadcast(1) )
     }
     if(checked === 'HEX'){
       setNotatieAdresaIP( binToHex( decToBin(adresaIP) ) )
       setNotatieSubnetMask( binToHex( decToBin(subnetmask) ) )
+      setNotatieHostMin( binToHex( decToBin(hostMin) ) )
+      setNotatieHostMax( binToHex( decToBin(hostMax) ) )
       setNotatieNetwork( binToHex( rezolvareNetworkSauBroadcast(0) ) )
       setNotatieBroadcast( binToHex( rezolvareNetworkSauBroadcast(1) ) )
     }
@@ -195,6 +202,8 @@ export default function App() {
     setNotatieSubnetMask('')
     setNotatieNetwork('')
     setNotatieBroadcast('')
+    setNotatieHostMin('')
+    setNotatieHostMax('')
   }
 
   const setareClasa = () => {
@@ -215,19 +224,25 @@ export default function App() {
    {
     if(checked === 'DEC'){
       setNotatieSubnetMask(subnetmask)
+      setNotatieHostMax   (hostMax)
+      setNotatieHostMin   (hostMin)
       setNotatieNetwork   ( binToDec( rezolvareNetworkSauBroadcast(0) ) )
       setNotatieBroadcast ( binToDec( rezolvareNetworkSauBroadcast(1) ) )
     }
     if(checked === 'BIN'){
       setNotatieSubnetMask(decToBin(subnetmask))   
+      setNotatieHostMax   ( decToBin(hostMax) ) 
+      setNotatieHostMin   ( decToBin(hostMin) ) 
       setNotatieNetwork   ( rezolvareNetworkSauBroadcast(0) )
       setNotatieBroadcast ( rezolvareNetworkSauBroadcast(1) )
     }
     if(checked === 'HEX'){
-      setNotatieAdresaIP( binToHex( decToBin(adresaIP) ) )
+      setNotatieAdresaIP  ( binToHex( decToBin(adresaIP) ) )
       setNotatieSubnetMask( binToHex( decToBin(subnetmask) ) )
-      setNotatieNetwork( binToHex( rezolvareNetworkSauBroadcast(0) ) )
-      setNotatieBroadcast( binToHex( rezolvareNetworkSauBroadcast(1) ) )
+      setNotatieHostMin   ( binToHex( decToBin(hostMin) ) )
+      setNotatieHostMax   ( binToHex( decToBin(hostMax) ) )
+      setNotatieNetwork   ( binToHex( rezolvareNetworkSauBroadcast(0) ) )
+      setNotatieBroadcast ( binToHex( rezolvareNetworkSauBroadcast(1) ) )
     }
   }, [subnetmask]
   )
@@ -277,14 +292,14 @@ export default function App() {
   return (    
     
     <IPCalculator
-      culoareAdresaValida = {culoareAdresaValida}   dataSMbits = {dataSMbits}               dataSM = {dataSM}   clasaIP = {clasaIP} 
-      numarHosturi = {numarHosturi}                 hostMin = {hostMin}                     hostMax = {hostMax} checked = {checked} 
-      setChecked = {setChecked}                     notatieAdresaIP = {notatieAdresaIP}     notatieBroadcast = {notatieBroadcast} 
-      notatieNetwork = {notatieNetwork}             notatieSubnetMask = {notatieSubnetMask} handleChangeInputAdresaIP = {handleChangeInputAdresaIP} 
-      adresaIP = {adresaIP}                         dropdownSMRef = {dropdownSMRef}         dropdownSMbits = {dropdownSMbitsRef} 
-      setBitiNetwork = {setBitiNetwork}             setSubnetmask = {setSubnetmask}
+      culoareAdresaValida = {culoareAdresaValida}  dataSMbits        = {dataSMbits}          dataSM                    = {dataSM}    
+      numarHosturi        = {numarHosturi}         hostMin           = {hostMin}             hostMax                   = {hostMax} 
+      setChecked          = {setChecked}           notatieAdresaIP   = {notatieAdresaIP}     notatieBroadcast          = {notatieBroadcast} 
+      notatieNetwork      = {notatieNetwork}       notatieSubnetMask = {notatieSubnetMask}   adresaIP                  = {adresaIP}  
+      dropdownSMRef       = {dropdownSMRef}        dropdownSMbitsRef = {dropdownSMbitsRef}   notatieHostMax            = {notatieHostMax}
+      setBitiNetwork      = {setBitiNetwork}       setSubnetmask     = {setSubnetmask}       notatieHostMin            = {notatieHostMin}
+      clasaIP             = {clasaIP}              checked           = {checked}             handleChangeInputAdresaIP = {handleChangeInputAdresaIP}
     />
     
   )
 }
-
