@@ -14,7 +14,7 @@ const IPCalculator = (
     return (
         <View style={styles.container_principal}>
 
-        <StatusBar style="auto"> </StatusBar>
+        <StatusBar style="auto" backgroundColor={"#232B2B"} barStyle={'light-content'}> </StatusBar>
     
         <View style={ [ styles.container_row_titlu, {} ]}>
           <Text style={ [ styles.text_titlu,  {} ] }>INPUT</Text>
