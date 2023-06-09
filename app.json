@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "IPCalculatorRN",
+    "name": "IP Calculator",
     "slug": "IPCalculatorRN",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -18,6 +18,8 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "eu.badeacristian.ipcalculator",
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -25,6 +27,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "52eb0f3f-caa8-45dc-a83c-ba1c93e2b5ed"
+      }
     }
   }
 }

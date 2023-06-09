@@ -1,4 +1,4 @@
-import { ScrollView, StatusBar, Text, TextInput, View} from 'react-native';
+import { StatusBar, Text, TextInput, View} from 'react-native';
 import { RadioButton } from 'react-native-paper';
 import SelectDropdown from 'react-native-select-dropdown';
 import styles from './styles';
